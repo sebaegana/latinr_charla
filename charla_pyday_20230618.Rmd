@@ -1,0 +1,371 @@
+---
+title: "El cliente en el centro: análisis de datos de clientes usando Python"
+subtitle: ""
+author: "Sebastián Egaña Santibáñez"
+institute:
+date: "2023/06/16 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    css: [default, default-fonts, my-theme.css, custom.css]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+    seal: true
+    self_contained: true
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(countdown)
+library(icons) 
+library(cowplot)
+library(tidyverse)
+library(readxl)
+library("knitr")
+library("kableExtra")
+library(DT)
+library(tidyquant)
+library(scales)
+library(ggthemes)
+library(ggedit)
+
+
+```
+
+```{r xaringan-logo, echo=FALSE, eval=FALSE}
+xaringanExtra::use_logo(
+  image_url = "logo_ust.png",
+  width = "150px",
+  height = "250px",
+)
+```
+
+```{r share-again, echo=FALSE}
+xaringanExtra::use_share_again()
+```
+
+```{r style-share-again, echo=FALSE}
+xaringanExtra::style_share_again(
+  share_buttons = "none"
+)
+```
+
+---
+
+background-size: cover
+
+class: justify, middle
+
+# Sobre mí
+
+```{r icon-chunk, echo=FALSE, eval=FALSE}
+fontawesome("rocket", style = "solid") # equivalent to icons::fontawesome$solid$rocket
+```
+
+- Licenciado en Filosofía, Ingeniero Comercial y Magíster en Finanzas. Diplomado en Ciencias de Datos. 
+
+- Trabajo actualmente como Data Scientist para AFP Planvital 
+
+<a href="mailto:segana@fen.uchile.cl">
+.white[`r icons::fontawesome("paper-plane")` segana@fen.uchile.cl]
+</a>
+
+<a href="https://segana.netlify.app">
+.white[`r icons::fontawesome("link")` segana.netlify.app]
+</a>
+
+<a href="https://github.com/sebaegana">
+.white[`r icons::fontawesome("github")` @sebaegana]
+</a>
+
+<a href="https://www.linkedin.com/in/sebastian-egana-santibanez/">
+.white[`r fontawesome$brands$linkedin` Sebastián Egaña Santibáñez]
+</a>
+
+
+---
+
+background-size: cover
+
+class: justify, middle
+
+# ¿De qué hablaremos?
+
+1. El valor del cliente: Customer Experience y NPS
+2. NPS ¿qué es? ¿características?
+3. Impacto de drivers en NPS
+4. Implicancias y mejoras
+
+
+---
+
+background-size: cover
+
+class: inverse, justify, middle
+
+# <span style="color:White">El valor del cliente</span>
+
+---
+
+background-size: cover
+
+class: justify, middle
+
+# Customer Experience
+
+Relevancia del concepto de experiencia del cliente (Customer experience o CX), en donde cobra importancia el proceso que vive el cliente al interactuar con una organización o empresa. Mayor importancia dentro del contexto de organizaciones que proveen servicios, debido a intangibilidad del mismo.
+
+The Data & Marketing Association of Finland habla de tres dimensiones para medir la lealtadad del cliente:
+
+1. Disposición a recomendar
+2. Intención de compra
+3. Mantención de clientes
+
+El primero, es lo relacionado con el Net promoter score (NPS). La combinación de las tres, corresponde a una aproximación del valor del cliente: en términos financieros, una empresa es el valor presente de sus flujos, lo que por el lado de la operación es el valor presente de todas las futuras compras de los clientes
+
+
+---
+
+background-size: cover
+
+class: justify, middle
+
+# Net promoter score
+
+Introducido por Reichheld (2003): "the one number you need to grow"
+
+.pull-left[
+
+### La pregunta
+
+En una escala del 0 al 10, ¿qué probabilidad hay de que recomiende nuestra empresa/producto/servicio a un amigo o colega?
+
+
+### Drivers del NPS
+
+Elementos que impulsan la respuesta y determinan la predisposición a recomendar.
+
+]
+
+.pull-right[
+
+
+### Cómo se cálcula
+
+```{r, echo=FALSE,out.width="50%",fig.cap=" ",fig.show='hold',fig.align='center'}
+
+knitr::include_graphics(c("pyday/images/net-promoter-score.jpg"))
+```
+
+### El número
+
+$$
+\text{% de Promotores} - \text{% de Detractores}
+$$
+
+]
+
+---
+
+background-size: cover
+
+class: justify, middle
+
+## Net promoter score
+
+### Ventajas:
+
+- Simplicidad
+- Llevar información cualitativa a valores númericos
+- Interacción con drivers
+
+### Desventajas
+
+- Baja tasa de respuesta: App/web 20% - 40%, email 15% - 25% y llamada 60% - 70% de la contactabilidad (Quora)
+- Relación con el servicio: la calificación posee relación con la interacción
+- Desconocimiento de la escala: en países como Chile, se asumen escalas de 1 al 7
+- Avanzar y avanzar
+- Sesgo de amabilidad
+
+---
+
+background-size: cover
+
+class: justify, middle
+
+## Net promoter score
+
+### Relevancia del NPS
+
+- NPS y ventas: posible relación entre ventas y NPS (Baehre et al. 2020)
+- Fácil de aplicar: preguntar categorías versus preguntar un número
+- Indicador de experiencia de servicios del cliente, como también de la relación general con la organización: de servicios versus relacional
+
+---
+
+background-size: cover
+
+class: justify, middle
+
+# ¿Qué sigue después?
+
+Cobran importancia los drivers del NPS. En la medida en que esten bien especificados y las respuestas de los clientes reflejen la situación del servicio o relación con el cliente, podemos gestionar a través de ellos 
+
+En términos de modelamiento, podemos medir el impacto de los drivers (distinto a predecir)
+
+---
+
+background-size: cover
+
+class: inverse, justify, bottom
+
+# <span style="color:white">Análisis de impacto en Python</span>
+
+---
+
+background-size: cover
+
+class: justify, middle
+
+# Código en Pyhton
+
+.small-code[
+``````{python, echo=TRUE, eval=FALSE}
+import pandas as pd
+from statsmodels.miscmodels.ordinal_model import OrderedModel
+from pandas.api.types import CategoricalDtype
+import numpy as np
+
+
+data_01 = pd.read_excel('pyday/data/data_final.xlsx',sheet_name='data')  
+
+data_01.dtypes
+
+summary_data_01 = data_01.describe()
+
+# Transformaciones
+
+data_01["tipo_cliente"] = np.where(data_01["NPS"] >= 9, "Promotor", 
+                                np.where((data_01["NPS"] < 9) & (data_01["NPS"] >= 7), 
+                                "Neutro", "Detractor"))
+data_01.groupby(by=["tipo_cliente"])["ID"].count()
+
+cat_type_2 = CategoricalDtype(categories=["Detractor","Neutro","Promotor"], ordered=True)
+data_01["tipo_cliente"] = data_01["tipo_cliente"].astype(cat_type_2)
+
+cat_type = CategoricalDtype(categories=[0, 1, 2, 3, 4, 5,6,7,8,9,10], ordered=True)
+data_01["NPS"] = data_01["NPS"].astype(cat_type)
+data_01.groupby(by=["NPS"])["ID"].count()
+
+data_01.groupby(by=["Market"])["ID"].count()
+data_01 = pd.get_dummies(data_01, columns=["Market"], prefix=["d"],dtype=float, drop_first = False)
+
+
+## Modelo 01
+
+mod_log_01 = OrderedModel(data_01['NPS'],
+                        data_01[['Driver 1', 'Driver 2', 'Driver 3']],
+                        distr='logit')
+                        
+res_log_01 = mod_log_01.fit(method='bfgs', disp=False)
+res_log_01.summary()
+
+
+```
+]
+
+---
+
+background-size: cover
+
+class: justify, middle
+
+# Código en Pyhton
+
+.small-code[
+``````{python, echo=TRUE, eval=FALSE}
+## Modelo 02
+
+mod_log_02 = OrderedModel(data_01['tipo_cliente'],
+                        data_01[['Driver 1', 'Driver 2', 'Driver 3']],
+                        distr='logit')
+                        
+res_log_02 = mod_log_02.fit(method='bfgs', disp=False)
+res_log_02.summary()
+
+## Modelo 03
+
+mod_log_03 = OrderedModel(data_01['tipo_cliente'],
+                        data_01[['Driver 1', 'Driver 2', 'Driver 3', 'Edad', "d_MEX"]],
+                        distr='logit')
+                        
+res_log_03 = mod_log_03.fit(method='bfgs', disp=False)
+res_log_03.summary()
+
+# Modelo por ubicación
+
+data_us = data_01[data_01["d_US"] == 1]
+
+mod_log_04 = OrderedModel(data_us['tipo_cliente'],
+                        data_us[['Driver 1', 'Driver 2', 'Driver 3', 'Edad']],
+                        distr='logit')
+                        
+res_log_04 = mod_log_04.fit(method='bfgs', disp=False)
+res_log_04.summary()
+
+### ¿Cómo calcular la probabilidad?
+
+data_reg_04 = mod_log_04.fit(method='bfgs', disp=False).params
+
+1. / (1. + np.exp(-0.003110))
+1. / (1. + np.exp(data_reg_04[3]))
+
+```
+]
+
+---
+
+background-size: cover
+
+class: justify, middle
+
+# Mejoras
+
+1. Mejorar encuesta: preguntas de control
+
+2. Una cosa es explicar, la otra predecir: proyectar NPS en otros clientes debido a la baja tasa de respuestas 
+
+3. Otras estrategias de estimación: No solo en base al modelo seleccionado, sino que también al tratamiento de las variables (edad)
+
+
+---
+
+background-size: cover
+
+class: justify, middle
+
+Referencias
+
+
+- Laitinen, M. A. (2019). Fix, develop, keep! Net promoter score as a tool for improving customer experience. Qualitative and Quantitative Methods in Libraries, 8(2), 147-158.
+
+- Baehre, S., O’Dwyer, M., O’Malley, L., & Lee, N. (2022). The use of Net Promoter Score (NPS) to predict sales growth: insights from an empirical investigation. Journal of the Academy of Marketing Science, 1-18.
+
+
+Otras
+
+- https://analyticsindiamag.com/a-complete-tutorial-on-ordinal-regression-in-python/
+
+- https://www.statalist.org/forums/forum/general-stata-discussion/general/1441893-what-is-a-cut-point-in-ologit
+
+- https://www.quora.com/What-is-the-average-NPS-response-rate-these-days
+
+
+```{r, echo=FALSE}
+#remotes::install_github(c('rstudio/pagedown', 'yihui/xaringan'))
+
+pagedown::chrome_print("index.html",output="chara_pyday_20230618.pdf")
+
+```
