@@ -42,4 +42,7 @@ jobs:
         with:
           name: model-report
           path: model_report.md
+      # Step 7: Print completion message
+      - name: Completion message
+        run: echo "MODELO TERMINADO"
 
