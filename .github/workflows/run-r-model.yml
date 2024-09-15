@@ -1,0 +1,45 @@
+name: Run R Model Script
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run_r_script:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up R environment
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+
+      # Step 3: Install R packages from r_requirements.txt
+      - name: Install R dependencies
+        run: |
+          Rscript -e 'pkgs <- readLines("r_requirements.txt"); install.packages(pkgs, repos="https://cloud.r-project.org")'
+
+      # Step 4: Run the R script (model_in_r.r)
+      - name: Run R model script
+        run: |
+          Rscript model_in_r.r
+
+      # Step 5: Render the R Markdown report (model_report.Rmd)
+      - name: Render R Markdown report
+        run: |
+          Rscript -e 'rmarkdown::render("model_report.Rmd", output_format = "github_document")'
+
+      # Step 6: Upload the generated Markdown report as an artifact
+      - name: Upload Markdown report
+        uses: actions/upload-artifact@v3
+        with:
+          name: model-report
+          path: model_report.md
+
