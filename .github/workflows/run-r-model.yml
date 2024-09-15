@@ -32,10 +32,10 @@ jobs:
           pwd
           ls -al
 
-      # Step 5: Run the R script (model_in_r.r) that references the data
+      # Step 5: Run the R script (model_in_r.R)
       - name: Run R model script
         run: |
-          Rscript model_in_r.r
+          Rscript model_in_r.R  # Ensure you use the correct case!
 
       # Step 6: Render the R Markdown report (model_report.Rmd)
       - name: Render R Markdown report
