@@ -26,30 +26,31 @@ jobs:
         run: |
           Rscript -e 'pkgs <- readLines("r_requirements.txt"); install.packages(pkgs, repos="https://cloud.r-project.org")'
 
-      # Debugging step: Print working directory and list files
+      # Step 4: Debugging step to check file structure (optional)
       - name: Check working directory and list files
         run: |
           pwd
           ls -al
 
-      # Step 4: Run the R script (adjust the path if necessary)
+      # Step 5: Run the R script (model_in_r.r) that references the data
       - name: Run R model script
         run: |
-          Rscript model_in_r.r  # Adjust this if the file is in a subdirectory
+          Rscript model_in_r.r
 
-      # Step 5: Render the R Markdown report (model_report.Rmd)
+      # Step 6: Render the R Markdown report (model_report.Rmd)
       - name: Render R Markdown report
         run: |
           Rscript -e 'rmarkdown::render("model_report.Rmd", output_format = "github_document")'
 
-      # Step 6: Upload the generated Markdown report as an artifact
+      # Step 7: Upload the generated Markdown report as an artifact
       - name: Upload Markdown report
         uses: actions/upload-artifact@v3
         with:
           name: model-report
           path: model_report.md
 
-      # Step 7: Print completion message
+      # Step 8: Print completion message
       - name: Completion message
         run: echo "MODELO TERMINADO"
+
 
