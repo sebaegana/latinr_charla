@@ -1,0 +1,6 @@
+dplyr
+ordinal
+readxl
+ggplot2
+rmarkdown
+MASS
