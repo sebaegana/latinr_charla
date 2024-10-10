@@ -4,6 +4,8 @@ library(dplyr)
 library(MASS)
 library(ordinal)
 
+## Este es un cambio menor
+
 # Load the data
 data_01 <- read_excel("pyday/data/data_final.xlsx", sheet = "data")
 
